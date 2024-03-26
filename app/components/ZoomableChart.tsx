@@ -5,7 +5,7 @@ import * as d3 from "d3";
 const data = json;
 
 export const ZoomableChart = () => {
-  const svgRef = useRef < SVGSVGElement > null;
+  const svgRef = useRef(null);
 
   useEffect(() => {
     // Specify the chart╬ô├ç├ûs dimensions.
@@ -20,7 +20,7 @@ export const ZoomableChart = () => {
     // Compute the layout.
     const hierarchy = d3
       .hierarchy(data)
-      .sum((d) => d.value || 0)
+      .sum((d: any) => d.value)
       .sort((a, b) => {
         const aValue = a.value || 0;
         const bValue = b.value || 0;
@@ -28,7 +28,7 @@ export const ZoomableChart = () => {
       });
     const root = d3
       .partition()
-      .size([height, ((hierarchy.height + 1) * width) / 3])(hierarchy);
+      .size([height, ((hierarchy.height + 1) * width) / 3])(hierarchy as any);
 
     // Append cells.
     const svg = d3.select(svgRef.current);
@@ -46,8 +46,8 @@ export const ZoomableChart = () => {
       .attr("fill-opacity", 0.6)
       .attr("fill", (d) => {
         if (!d.depth) return "#ccc";
-        while (d.depth > 1) d = d.parent;
-        return color(d.data.name);
+        while (d.depth > 1) d = d.parent as any;
+        return color((d.data as any).name);
       })
       .style("cursor", "pointer");
 
@@ -59,30 +59,30 @@ export const ZoomableChart = () => {
       .attr("y", 13)
       .attr("fill-opacity", (d) => +labelVisible(d));
 
-    text.append("tspan").text((d) => d.data.name);
+    text.append("tspan").text((d) => (d.data as any).name);
 
     const format = d3.format(",d");
     const tspan = text
       .append("tspan")
-      .attr("fill-opacity", (d) => labelVisible(d) * 0.7)
-      .text((d) => ` ${format(d.value)}`);
+      .attr("fill-opacity", (d) => +labelVisible(d) * 0.7)
+      .text((d) => ` ${format(d.value as number)}`);
 
     cell.append("title").text(
       (d) =>
         `${d
           .ancestors()
-          .map((d) => d.data.name)
+          .map((d) => (d.data as any).name)
           .reverse()
-          .join("/")}\n${format(d.value)}`,
+          .join("/")}\n${format(d.value as number)}`,
     );
 
-    let focus = root;
-    function clicked(event, p) {
+    let focus: any = root;
+    function clicked(event: MouseEvent, p: any) {
       if (!p.parent) return;
       focus = focus === p ? (p = p.parent || root) : p;
 
       root.each(
-        (d) =>
+        (d: any) =>
           (d.target = {
             x0: ((d.x0 - p.x0) / (p.x1 - p.x0)) * height,
             x1: ((d.x1 - p.x0) / (p.x1 - p.x0)) * height,
@@ -94,20 +94,25 @@ export const ZoomableChart = () => {
       const t = cell
         .transition()
         .duration(750)
-        .attr("transform", (d) => `translate(${d.target.y0},${d.target.x0})`);
+        .attr(
+          "transform",
+          (d: any) => `translate(${d.target.y0},${d.target.x0})`,
+        );
 
-      rect.transition(t).attr("height", (d) => rectHeight(d.target));
-      text.transition(t).attr("fill-opacity", (d) => +labelVisible(d.target));
+      rect.transition(t).attr("height", (d: any) => rectHeight(d.target));
+      text
+        .transition(t)
+        .attr("fill-opacity", (d: any) => +labelVisible(d.target));
       tspan
         .transition(t)
-        .attr("fill-opacity", (d) => labelVisible(d.target) * 0.7);
+        .attr("fill-opacity", (d: any) => +labelVisible(d.target) * 0.7);
     }
 
-    function rectHeight(d) {
+    function rectHeight(d: any) {
       return d.x1 - d.x0 - Math.min(1, (d.x1 - d.x0) / 2);
     }
 
-    function labelVisible(d) {
+    function labelVisible(d: any) {
       return d.y1 <= width && d.y0 >= 0 && d.x1 - d.x0 > 16;
     }
   }, []);
