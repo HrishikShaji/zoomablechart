@@ -87,8 +87,7 @@ export const ZoomableChart = () => {
 
 		let focus: any = root;
 		function clicked(event: MouseEvent, p: any) {
-			if (!p.parent) return;
-			focus = focus === p ? (p = p.parent || root) : p;
+			focus = focus === p ? (p = p.parent) : p;
 
 			root.each(
 				(d: any) =>
