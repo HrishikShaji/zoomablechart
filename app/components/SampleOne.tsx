@@ -4,7 +4,7 @@ import * as d3 from "d3";
 
 const data = json;
 
-export const ZoomableChart = () => {
+export const SampleOne = () => {
   const svgRef = useRef(null);
 
   useEffect(() => {
@@ -47,7 +47,9 @@ export const ZoomableChart = () => {
       .data(root.descendants())
       .join("g")
       .attr("transform", (d) => `translate(${d.y0},${d.x0})`)
-      .on("click", clicked);
+      .on("click", clicked)
+      .on("mouseenter", onHover);
+
     const rect = cell
       .append("rect")
       .attr("width", (d) => d.y1 - d.y0 - 1)
@@ -117,6 +119,15 @@ export const ZoomableChart = () => {
         .attr("fill-opacity", (d: any) => +labelVisible(d.target) * 0.7);
     }
 
+    function onHover(event: MouseEvent, p: any) {
+      const cell = d3.select(event.currentTarget as any);
+      const rect = cell.select("rect");
+      const initialColor = rect.attr("fill");
+      console.log(initialColor);
+      rect.attr("fill", "blue");
+
+      cell.on("mouseleave", () => rect.attr("fill", initialColor));
+    }
     function rectHeight(d: any) {
       return d.x1 - d.x0 - Math.min(1, (d.x1 - d.x0) / 2);
     }
